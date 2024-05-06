@@ -4,18 +4,17 @@ import Stack from '@mui/joy/Stack';
 import io from 'socket.io-client'
 import { useEffect, useRef, useState } from "react";
 const userName = 'User' + Math.floor(Math.random() * 100000);
-
+let didIoffer = false;
 
 export default function Chatapp() {
     const localstream = useRef(null);
     const remotestream = useRef(null);
     const socketRef = useRef(null);
-    const [didIoffer, SetOffer] = useState(false);
     const [Offers, SetOffers] = useState([]);
 
     useEffect(() => {
         // You can add the username and password also in order to authenticate your socket.io server....
-        const socket = io('http://192.168.0.105:5000', {
+        const socket = io('http://192.168.102.13:5000', {
             auth: {
                 userName: userName,
             }
@@ -24,7 +23,7 @@ export default function Chatapp() {
         // Listen for available offers
         socket.on('newOfferawaiting', (offer) => {
             console.log("Newoffer!");
-            SetOffers((prev)=> [...prev , offer[0]]);
+            SetOffers((prev) => [...prev, offer[0]]);
         });
         // socket.on('availiableOffers', (offer) => {
         //     console.log("Newoffer!");
@@ -33,15 +32,23 @@ export default function Chatapp() {
     }, []);
 
     const callNow = async () => {
+        didIoffer = true;
         const socket = socketRef.current;
         const peerConnection = await CreatePeer(socket);
         try {
             //create an offer
             const offer = await peerConnection.createOffer();
             peerConnection.setLocalDescription(offer);
-            SetOffer(true);
             // Sending the offer to the signaling server.
             await socket.emit('newOffer', offer);
+            socket.on('answerResponse', (answerRes) => {
+                peerConnection.setRemoteDescription(answerRes.answer);
+            })
+            socket.on('recievedIceCandidates', (iceCandidate) => {
+                console.log("ice added Client side...");
+                peerConnection.addIceCandidate(iceCandidate)
+            })
+            // SetOffer(false);
         } catch (error) {
             console.log(error);
         }
@@ -49,17 +56,22 @@ export default function Chatapp() {
 
     const answerCall = async (offerObj) => {
         const socket = socketRef.current;
-        const peerConnection =  await CreatePeer(socket , offerObj);
+        const peerConnection = await CreatePeer(socket, offerObj);
         const answer = await peerConnection.createAnswer({});
         await peerConnection.setLocalDescription(answer);
         offerObj.answer = answer;
-        
-        
-
-
+        const OfferIcecandidates = await socket.emitWithAck('newAnswer', offerObj);
+        OfferIcecandidates.forEach((c) => {
+            peerConnection.addIceCandidate(c);
+        })
+        socket.on('recievedIceCandidates', (iceCandidate) => {
+            console.log("Ice added answer side");
+            peerConnection.addIceCandidate(iceCandidate)
+        })
+        console.log(OfferIcecandidates);
     }
 
-    async function CreatePeer(socket , answerOffer) {
+    async function CreatePeer(socket, answerOffer) {
         try {
             //fetch User media
             const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
@@ -84,6 +96,7 @@ export default function Chatapp() {
             //Sending the ice candidates to the signaling server
             peerConnection.onicecandidate = (event) => {
                 if (event.candidate) {
+                    // console.log(event.candidate);
                     socket.emit("SendingiceCandidatetoSignalingserver", {
                         iceCandidate: event.candidate,
                         iceUserName: userName,
@@ -94,10 +107,10 @@ export default function Chatapp() {
             //Check for remote stream add it to our remotestream
             peerConnection.ontrack = (event) => {
                 event.streams[0].getTracks().forEach((element) => {
-                    remotestream.current.addTrack(element, remotestream);
+                    remotestream.current.srcObject.addTrack(element, remotestream);
                 })
             }
-            if(answerOffer){
+            if (answerOffer) {
                 await peerConnection.setRemoteDescription(answerOffer.offer);
             }
             return peerConnection;
@@ -140,7 +153,7 @@ export default function Chatapp() {
             >
                 {console.log(Offers)}
                 {Offers.length > 0 && Offers.map((o, index) => (
-                    <Button key={index} size="lg" variant="solid" color="primary" onClick={answerCall(o)}>
+                    <Button key={index} size="lg" variant="solid" color="primary" onClick={() => answerCall(o)}>
                         Call from {o.offerUsername}!!
                     </Button>
                 ))}
