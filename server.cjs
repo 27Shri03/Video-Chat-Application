@@ -60,7 +60,7 @@ io.on('connection', (socket) => {
     })
 
     socket.on('SendingiceCandidatetoSignalingserver', (IceCandidate) => {
-        const { iceCandidate, DidIoffer, iceUserName } = IceCandidate;
+        const { iceCandidate, DidIoffer, iceUserName , Offerer } = IceCandidate;
         if (DidIoffer) {
             const offerer = Offers.find(s => s.offerUsername === iceUserName);
             // if(!offerer){
@@ -68,6 +68,7 @@ io.on('connection', (socket) => {
             // }
             offerer.offerIceCandidates.push(iceCandidate);
             if (offerer.answerUsername) {
+                console.log("tranfeering some iCCCee");
                 const answerSocket = ConnectedSockets.find(s => s.Username === offerer.answerUsername);
                 socket.to(answerSocket.socketId).emit('recievedIceCandidates', iceCandidate);
             }
@@ -76,11 +77,14 @@ io.on('connection', (socket) => {
             }
         }
         else {
-            const answerer = Offers.find(s => s.answerUsername === iceUserName);
+            const answerer = Offers.find(s => s.offerUsername === Offerer.offerUsername);
+            answerer.answerIceCandidates.push(iceCandidate);
+            console.log(answerer.offerUsername);
             if (answerer) {
                 console.log("answerer is here..");
                 const offerer = ConnectedSockets.find(s => s.Username === answerer.offerUsername);
                 if (offerer) {
+                    console.log("some iceeeeetoooo");
                     socket.to(offerer.socketId).emit('recievedIceCandidates', iceCandidate);
                 }
                 else {

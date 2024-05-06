@@ -14,7 +14,7 @@ export default function Chatapp() {
 
     useEffect(() => {
         // You can add the username and password also in order to authenticate your socket.io server....
-        const socket = io('http://192.168.102.13:5000', {
+        const socket = io('http://192.168.0.105:5000', {
             auth: {
                 userName: userName,
             }
@@ -35,6 +35,11 @@ export default function Chatapp() {
         didIoffer = true;
         const socket = socketRef.current;
         const peerConnection = await CreatePeer(socket);
+        socket.on('recievedIceCandidates', (iceCandidate) => {
+            console.log("ice added Master side...");
+            console.log(iceCandidate);
+            peerConnection.addIceCandidate(iceCandidate);
+        })
         try {
             //create an offer
             const offer = await peerConnection.createOffer();
@@ -42,11 +47,8 @@ export default function Chatapp() {
             // Sending the offer to the signaling server.
             await socket.emit('newOffer', offer);
             socket.on('answerResponse', (answerRes) => {
+                console.log(answerRes);
                 peerConnection.setRemoteDescription(answerRes.answer);
-            })
-            socket.on('recievedIceCandidates', (iceCandidate) => {
-                console.log("ice added Client side...");
-                peerConnection.addIceCandidate(iceCandidate)
             })
             // SetOffer(false);
         } catch (error) {
@@ -62,12 +64,13 @@ export default function Chatapp() {
         offerObj.answer = answer;
         const OfferIcecandidates = await socket.emitWithAck('newAnswer', offerObj);
         OfferIcecandidates.forEach((c) => {
+            console.log("Ice added client side");
             peerConnection.addIceCandidate(c);
         })
-        socket.on('recievedIceCandidates', (iceCandidate) => {
-            console.log("Ice added answer side");
-            peerConnection.addIceCandidate(iceCandidate)
-        })
+        // socket.on('recievedIceCandidates', (iceCandidate) => {
+        //     console.log("Ice added answer side");
+        //     peerConnection.addIceCandidate(iceCandidate)
+        // })
         console.log(OfferIcecandidates);
     }
 
@@ -96,11 +99,12 @@ export default function Chatapp() {
             //Sending the ice candidates to the signaling server
             peerConnection.onicecandidate = (event) => {
                 if (event.candidate) {
-                    // console.log(event.candidate);
+                    console.log(event.candidate);
                     socket.emit("SendingiceCandidatetoSignalingserver", {
                         iceCandidate: event.candidate,
                         iceUserName: userName,
-                        DidIoffer: didIoffer
+                        DidIoffer: didIoffer,
+                        Offerer: answerOffer
                     });
                 }
             };
