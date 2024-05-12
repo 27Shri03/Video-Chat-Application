@@ -1,16 +1,23 @@
 const express = require('express');
+require('dotenv').config();
+const cors = require('cors'); // Import the cors package
 const app = express();
 const http = require('http');
 const socketio = require('socket.io');
 const server = http.createServer(app);
+const PORT = process.env.PORT || 5000;
+const URL = process.env.VITE_FRONTEND_URL;
 const io = socketio(server, {
     cors: {
-        origin: ["http://localhost:5173",
-        ],
+        origin: [URL],
         methods: ["GET", "POST"]
     }
 });
-server.listen(5000);
+
+// Use cors middleware
+app.use(cors());
+
+server.listen(PORT);
 // Create an offer Array 
 
 let Offers = [

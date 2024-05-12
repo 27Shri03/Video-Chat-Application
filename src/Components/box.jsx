@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 const userName = 'User' + Math.floor(Math.random() * 100000);
 let didIoffer = false;
 let peerConnection = null;
+const URL = import.meta.env.VITE_API_URL;
 
 export default function Chatapp() {
     let localstream = useRef(null);
@@ -15,7 +16,7 @@ export default function Chatapp() {
 
     useEffect(() => {
         // You can add the username and password also in order to authenticate your socket.io server....
-        const socket = io('http://192.168.0.103:5000', {
+        const socket = io(URL, {
             auth: {
                 userName: userName,
             }
@@ -25,9 +26,7 @@ export default function Chatapp() {
         socket.on('newOfferawaiting', (offer) => {
             console.log("Newoffer!");
             SetOffers((prev) => [...prev, offer[0]]);
-            // SetOffers(offer);
         });
-
         socket.on('availiableOffers', (offers) => {
             SetOffers(offers);
         })
@@ -37,11 +36,6 @@ export default function Chatapp() {
                 peerConnection.close();
                 peerConnection = null;
             }
-            // SetOffers((prev) => {
-            //     let temp = [...prev];
-            //     temp = temp.filter((o) => o !== data.offer);
-            //     return temp;
-            // })
             console.log(Offers);
             remotestream.current.srcObject.getTracks().forEach(track => track.stop());
             remotestream.current.srcObject = null;
@@ -54,11 +48,6 @@ export default function Chatapp() {
                 peerConnection.close();
                 peerConnection = null;
             }
-            // SetOffers((prev) => {
-            //     let temp = [...prev];
-            //     temp = temp.filter((o) => o !== data.offer);
-            //     return temp;
-            // })
             console.log(Offers);
             remotestream.current.srcObject.getTracks().forEach(track => track.stop());
             remotestream.current.srcObject = null;
@@ -186,7 +175,7 @@ export default function Chatapp() {
                 Welcome <h3 style={{ display: "inline", color: "red" }}>{userName}</h3>
             </div>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "110%" }}>
-                <video style={{ borderRadius: "5%" }} ref={localstream} autoPlay playsInline controls height="300px"></video>
+                <video style={{ borderRadius: "5%" }} ref={localstream} autoPlay playsInline controls muted height="300px"></video>
                 <video style={{ borderRadius: "5%" }} ref={remotestream} autoPlay playsInline controls height="300px"></video>
             </Box>
             <Stack
