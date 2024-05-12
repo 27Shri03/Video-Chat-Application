@@ -25,27 +25,41 @@ export default function Chatapp() {
         socket.on('newOfferawaiting', (offer) => {
             console.log("Newoffer!");
             SetOffers((prev) => [...prev, offer[0]]);
+            // SetOffers(offer);
         });
+
+        socket.on('availiableOffers', (offers) => {
+            SetOffers(offers);
+        })
         socket.on('userLeft', (data) => {
             console.log("UserLeft");
             if (peerConnection) {
                 peerConnection.close();
                 peerConnection = null;
             }
+            // SetOffers((prev) => {
+            //     let temp = [...prev];
+            //     temp = temp.filter((o) => o !== data.offer);
+            //     return temp;
+            // })
+            console.log(Offers);
             remotestream.current.srcObject.getTracks().forEach(track => track.stop());
             remotestream.current.srcObject = null;
             localstream.current.srcObject.getTracks().forEach(track => track.stop());
-
             localstream.current.srcObject = null;
-
-
             socket.emit('terminateConnection', data);
         })
-        socket.on('EndConnection', () => {
+        socket.on('EndConnection', (data) => {
             if (peerConnection) {
                 peerConnection.close();
                 peerConnection = null;
             }
+            // SetOffers((prev) => {
+            //     let temp = [...prev];
+            //     temp = temp.filter((o) => o !== data.offer);
+            //     return temp;
+            // })
+            console.log(Offers);
             remotestream.current.srcObject.getTracks().forEach(track => track.stop());
             remotestream.current.srcObject = null;
             localstream.current.srcObject.getTracks().forEach(track => track.stop());
@@ -55,12 +69,20 @@ export default function Chatapp() {
     }, []);
 
     const disconnectCall = () => {
+        if(peerConnection=== null){
+            alert("No connection is established yet...");
+            return;
+        }
         const socket = socketRef.current;
         console.log("Request for disconnection...", socket.id);
         socket.emit('hangUp', userName);
     }
 
     const callNow = async () => {
+        if(peerConnection !== null){
+            alert("you are in ongoing call.....");
+            return;
+        }
         // As the offerer we are going to set the didIoffer as true..
         didIoffer = true;
         const socket = socketRef.current;
@@ -87,6 +109,7 @@ export default function Chatapp() {
     }
 
     const answerCall = async (offerObj) => {
+        SetOffers(prev => prev.filter(offer => offer !== offerObj));
         didIoffer = false;
         const socket = socketRef.current;
         await CreatePeer(socket, offerObj);
@@ -146,6 +169,7 @@ export default function Chatapp() {
                 This if statement is when a call is being answered
                 On the client side we are going to set it's remoteDescription from the OfferObject recieved when answer button is pressed.  
                  */
+                console.log("Inside answer Offer : ", answerOffer);
                 await peer.setRemoteDescription(answerOffer.offer);
             }
             peerConnection = peer;

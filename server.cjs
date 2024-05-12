@@ -28,18 +28,16 @@ const ConnectedSockets = [
     // UserName , socketid
 ]
 
-let ConfirmationMaster = false;
-let ConfirmationClient = false;
-
 io.on('connection', (socket) => {
     const Username = socket.handshake.auth.userName;
     ConnectedSockets.push({
         socketId: socket.id,
         Username
     })
-    // if(Offers.length){
-    //     socket.emit('availiableOffers' , Offers);
-    // }
+    if(Offers.length){
+        let newOffers = Offers.filter((o)=> o.transmit !== false);
+        socket.emit('availiableOffers' , newOffers);
+    }
     socket.on('newOffer', (newOffer) => {
         Offers.push({
             offerUsername: Username,
@@ -47,17 +45,21 @@ io.on('connection', (socket) => {
             offerIceCandidates: [],
             answerUsername: null,
             answer: null,
-            answerIceCandidates: []
+            answerIceCandidates: [],
+            transmit : true
         })
         socket.broadcast.emit('newOfferawaiting', Offers.slice(-1));
     })
 
     socket.on('newAnswer', (offerObj, ackFunction) => {
         const OffererSocket = ConnectedSockets.find((s) => s.Username === offerObj.offerUsername);
+        let temp = Offers.filter((o) => o.offerUsername !== offerObj.offerUsername && o.transmit !== false);
+        socket.broadcast.emit('availiableOffers', temp);
         const OffererId = OffererSocket.socketId;
         let OffertoUpdate = Offers.find(s => s.offerUsername === offerObj.offerUsername);
         ackFunction(OffertoUpdate.offerIceCandidates);
         OffertoUpdate.answer = offerObj.answer;
+        OffertoUpdate.transmit = false;
         OffertoUpdate.answerUsername = offerObj.answerUsername;
         socket.to(OffererId).emit('answerResponse', OffertoUpdate);
     })
@@ -110,20 +112,21 @@ io.on('connection', (socket) => {
         const SendsocketClient = ConnectedSockets.filter(s => s.Username === offer.answerUsername);
         console.log("SendSocketClient", SendsocketClient);
         console.log("SendSocketMaster", SendsocketMaster);
+        Offers = Offers.filter((o)=> o!==offer);
+        console.log(Offers);
         if (frontendUsername === offer.offerUsername) {
             console.log(`Sending from : ${offer.offerUsername} to : ${offer.answerUsername}` );
-            socket.to(SendsocketClient[0].socketId).emit('userLeft', { frontendUsername, socketId: SendsocketMaster[0].socketId });
+            socket.to(SendsocketClient[0].socketId).emit('userLeft', { frontendUsername, socketId: SendsocketMaster[0].socketId  , offer});
         }
         else {
             console.log(`Sending from : ${offer.answerUsername} to : ${offer.offerUsername}` );
-            socket.to(SendsocketMaster[0].socketId).emit('userLeft', { frontendUsername, socketId: SendsocketClient[0].socketId });
+            socket.to(SendsocketMaster[0].socketId).emit('userLeft', { frontendUsername, socketId: SendsocketClient[0].socketId , offer});
         }
         console.log("hang up in server completed...");
-
     });
     socket.on('terminateConnection', (data) => {
         console.log("Termination process started....");
-        socket.to(data.socketId).emit('EndConnection');
+        socket.to(data.socketId).emit('EndConnection',data);
         console.log("Termination process Ended....");
     })
 
