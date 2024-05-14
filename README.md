@@ -1,7 +1,7 @@
 
 # Video Chat Application (Beta)
 
-This is a real-time chat application built using WebRTC (Web Real-Time Communication) technology, allowing two users to communicate through video, audio, and text chat. The application consists of a React frontend and a backend server built with Node.js and Socket.IO for signaling.
+This is a real-time chat application built using WebRTC (Web Real-Time Communication) technology, allowing two users to communicate through video and audio. The application consists of a React frontend and a backend server built with Node.js and Socket.IO for signaling.
 
 ## Features
 
