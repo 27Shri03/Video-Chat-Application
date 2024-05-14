@@ -3,10 +3,12 @@ import Button from '@mui/joy/Button';
 import Stack from '@mui/joy/Stack';
 import io from 'socket.io-client'
 import { useEffect, useRef, useState } from "react";
+import '../CSS/box.css';
 const userName = 'User' + Math.floor(Math.random() * 100000);
 let didIoffer = false;
 let peerConnection = null;
 const URL = import.meta.env.VITE_API_URL;
+
 
 export default function Chatapp() {
     let localstream = useRef(null);
@@ -58,7 +60,7 @@ export default function Chatapp() {
     }, []);
 
     const disconnectCall = () => {
-        if(peerConnection=== null){
+        if (peerConnection === null) {
             alert("No connection is established yet...");
             return;
         }
@@ -68,7 +70,7 @@ export default function Chatapp() {
     }
 
     const callNow = async () => {
-        if(peerConnection !== null){
+        if (peerConnection !== null) {
             alert("you are in ongoing call.....");
             return;
         }
@@ -167,16 +169,16 @@ export default function Chatapp() {
         }
     }
     return (
-        <Box sx={{ width: "max-content", margin: "0 auto", marginTop: "1%", display: "flex", justifyContent: "space-between", alignItems: "center", flexDirection: "column" }}>
-            <h1 style={{ fontFamily: "poppins", fontSize: "50px", color: "#003135", textDecoration: "underline", textUnderlineOffset: "10px" }}>
+        <Box id="Master" sx={{ width: "100vw" , height : '100vh', display: "flex", alignItems: "center", flexDirection: "column" , border : '2px solid black'}}>
+            <h1 className="heading" style={{ fontFamily: "poppins", fontSize: "2em", color: "#003135", textDecoration: "underline", textUnderlineOffset: "10px" }}>
                 Video chat application
             </h1>
-            <div style={{ fontFamily: "poppins", fontSize: "50px", color: "#003135", fontWeight: "bolder" }}>
-                Welcome <h3 style={{ display: "inline", color: "red" }}>{userName}</h3>
+            <div className="heading"  style={{ fontFamily: "poppins", fontSize: "2em", color: "#003135", fontWeight: "bolder" }}>
+                Welcome <h3  style={{ display: "inline", color: "red" }}>{userName}</h3>
             </div>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "110%" }}>
-                <video style={{ borderRadius: "5%" }} ref={localstream} autoPlay playsInline controls muted height="300px"></video>
-                <video style={{ borderRadius: "5%" }} ref={remotestream} autoPlay playsInline controls height="300px"></video>
+            <Box id="video_container" sx={{ display: "flex", justifyContent: "center", margin : '30px'}}>
+                <video id="vidOne" style={{ borderRadius: "5%" , width : '50%' , height : '100%'}} ref={localstream} autoPlay playsInline controls muted></video>
+                <video id="vidTwo"  style={{ borderRadius: "5%" , width : '50%' , height : '100%'}} ref={remotestream} autoPlay playsInline controls ></video>
             </Box>
             <Stack
                 direction="row"

@@ -94,7 +94,7 @@ io.on('connection', (socket) => {
             if (offerer.answerUsername) {
                 console.log("tranfeering some iCCCee");
                 const answerSocket = ConnectedSockets.find(s => s.Username === offerer.answerUsername);
-                socket.to(answerSocket.socketId).emit('recievedIceCandidates', iceCandidate);
+                socket.to(answerSocket[0].socketId).emit('recievedIceCandidates', iceCandidate);
             }
             else {
                 console.log("Call haven't pickup up yet");
