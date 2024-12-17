@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background with gradient matching the UI theme -->
+  <defs>
+    <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B7FFF"/>
+      <stop offset="100%" style="stop-color:#6B5FDB"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Main rounded square background -->
+  <rect x="10" y="10" width="180" height="180" rx="50" fill="url(#purpleGradient)"/>
+  
+  <!-- Stylized 'V' that forms a camera shape -->
+  <path d="M60 60 
+           L100 120 
+           L140 60 
+           L160 80 
+           L160 140 
+           L40 140 
+           L40 80 
+           Z" 
+        fill="white" 
+        opacity="0.95"/>
+  
+  <!-- Camera lens circle -->
+  <circle cx="100" cy="95" r="15" fill="url(#purpleGradient)" stroke="white" stroke-width="4"/>
+  
+  <!-- Floating geometric elements -->
+  <rect x="150" y="30" width="20" height="20" rx="5" fill="white" opacity="0.1"/>
+  <rect x="30" y="150" width="15" height="15" rx="4" fill="white" opacity="0.1"/>
+  <circle cx="40" cy="40" r="8" fill="white" opacity="0.1"/>
+</svg>
