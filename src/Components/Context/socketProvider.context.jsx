@@ -8,13 +8,12 @@ export const useSocketContext = () => useContext(SocketContext);
 const SocketProvider = ({ children }) => {
     const { userData, addFriendRequest, addFriend } = useUserData();
     const socketRef = useRef(null);
-    const localStream = useRef(null);
-    const remoteStream = useRef(null);
     const [Offer, setOffer] = useState(null);
 
 
     useEffect(() => {
-        const newSocket = io(`https://redchat.azurewebsites.net?userId=${userData.userId}&username=${userData.username}`);
+        // const newSocket = io(`https://redchat.azurewebsites.net?userId=${userData.userId}&username=${userData.username}`);
+        const newSocket = io(`http://localhost:8080?userId=${userData.userId}&username=${userData.username}`);
         socketRef.current = newSocket;
         newSocket.on('connect', () => {
             console.log('Connected to socket server');
@@ -59,7 +58,7 @@ const SocketProvider = ({ children }) => {
     };
 
     return (
-        <SocketContext.Provider value={{ sendData, Offer, socketRef, localStream , remoteStream }}>
+        <SocketContext.Provider value={{ sendData, Offer, socketRef}}>
             {children}
         </SocketContext.Provider>
     );

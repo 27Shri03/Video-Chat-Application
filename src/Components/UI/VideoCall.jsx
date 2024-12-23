@@ -17,13 +17,13 @@ import {
     MicOff,
     CameraAlt
 } from '@mui/icons-material';
+import { useCallback } from 'react';
 
 import { useVideoCall } from '../Context/VideoCallContext';
 
 const VideoCallScreen = ({ remoteUser }) => {
     // Refs for video elements
-    const localVideoRef = useRef(null);
-    const remoteVideoRef = useRef(null);
+    const { localVideoRef, remoteVideoRef, setIsVideoCallActive } = useVideoCall();
 
     // State management
     const [localStream, setLocalStream] = useState(null);
@@ -91,28 +91,25 @@ const VideoCallScreen = ({ remoteUser }) => {
 
     // End call function (placeholder)
     const shutdownMediaStream = useCallback(() => {
-        if (localStream) {
-            // Stop all tracks
-            localStream.getTracks().forEach(track => {
-                track.stop();
-            });
-
-            // Clear video source
-            if (localVideoRef.current) {
-                localVideoRef.current.srcObject = null;
-            }
-
-            // Set local stream to null
-            setLocalStream(null);
-            setIsCameraOn(false);
-            setIsMicOn(false);
+        if(remoteStream){
+            remoteVideoRef.current.srcObject.getTracks().forEach(track => track.stop());
+            remoteVideoRef.current.srcObject = null;
+            setRemoteStream(null);
         }
+        if(localStream){
+            localVideoRef.current.srcObject.getTracks().forEach(track => track.stop());
+            localVideoRef.current.srcObject = null;
+            setLocalStream(null);
+        }
+        setIsCameraOn(false);
+        setIsMicOn(false);
     }, [localStream]);
 
     // End call function 
     const endCall = useCallback(() => {
         // Shutdown media stream
         shutdownMediaStream();
+        setIsVideoCallActive(false);
     }, [shutdownMediaStream]);
 
     return (

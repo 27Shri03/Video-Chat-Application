@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import LoginPage from "./Components/Auth/Loginpage.jsx";
 import CustomAlert from "./Components/styles/Alert.jsx";
 import IntroPage from "./Components/UI/IntroPage.jsx";
@@ -15,6 +15,8 @@ export default function App() {
   const [severity, setSeverity] = useState('success');
   const [isVideoCallActive, setIsVideoCallActive] = useState(false);
   const [remoteUser, setRemoteUser] = useState(null);
+  const localVideoRef = useRef(null);
+  const remoteVideoRef = useRef(null);
   return (
     <>
       <CustomAlert
@@ -28,7 +30,9 @@ export default function App() {
           isVideoCallActive,
           setIsVideoCallActive,
           remoteUser,
-          setRemoteUser
+          setRemoteUser,
+          localVideoRef,
+          remoteVideoRef
         }}
       >
         <Router>
